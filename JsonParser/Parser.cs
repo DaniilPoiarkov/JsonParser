@@ -20,11 +20,9 @@ public sealed class Parser
                 continue;
             }
 
-            var (inc, val) = ch is '['
+            return ch is '['
                 ? ParseArray(json, i)
                 : ParseValue(json, i);
-
-            return (inc + i, val);
         }
 
         throw new ArgumentException("Invalid json format.", nameof(json));
@@ -77,12 +75,7 @@ public sealed class Parser
             var parser = GetValueParser(ch)
                 ?? throw new ArgumentException($"Unknown character {ch} on position {i}.", nameof(json));
 
-            var res = parser.Parse(json, i);
-
-            i += res.Count;
-            result = res.Result;
-
-            break;
+            return parser.Parse(json, i);
         }
 
         return (i - position, result);

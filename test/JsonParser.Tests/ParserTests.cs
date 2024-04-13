@@ -46,11 +46,14 @@ public sealed class ParserTests
 
     [Theory]
     [InlineData("[true, false]", true, false)]
+    [InlineData("[1, 2, 69, 420]", 1, 2, 69, 420)]
+    [InlineData("[\"hello\", \" \\\"world!\\\" \"]", "hello", " \"world!\" ")]
+    [InlineData("[]")]
     public void ParseArray(string json, params object[] expectedValues)
     {
         var result = Parser.Parse(json).As<object?[]>();
 
-        result.Should().NotBeNullOrEmpty();
+        result.Should().NotBeNull();
 
         result.Length.Should().Be(expectedValues.Length);
 
