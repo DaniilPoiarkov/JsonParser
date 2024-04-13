@@ -20,12 +20,49 @@ public sealed class Parser
                 continue;
             }
 
-            return ch is '['
-                ? ParseArray(json, i)
-                : ParseValue(json, i);
+            if (ch is '[')
+            {
+                return ParseArray(json, i);
+            }
+
+            if (ch is '{')
+            {
+                return ParseObject(json, i);
+            }
+
+            return ParseValue(json, i);
         }
 
         throw new ArgumentException("Invalid json format.", nameof(json));
+    }
+
+    private static (int Count, object?[] Value) ParseObject(string json, int position)
+    {
+        var result = new List<object?>();
+
+        var i = position + 1;
+
+        for (; i < json.Length; i++)
+        {
+            var ch = json[i];
+
+            if (ch is ' ' or ',')
+            {
+                continue;
+            }
+
+            if (ch is ']')
+            {
+                break;
+            }
+
+            var (inc, val) = InternalParse(json, i);
+
+            i += inc;
+            result.Add(val);
+        }
+
+        return (i - position, result.ToArray());
     }
 
     private static (int Count, object?[] Value) ParseArray(string json, int position)
