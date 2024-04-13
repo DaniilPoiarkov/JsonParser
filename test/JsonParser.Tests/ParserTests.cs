@@ -50,7 +50,7 @@ public sealed class ParserTests
     [InlineData("[\"hello\", \" \\\"world!\\\" \"]", "hello", " \"world!\" ")]
     [InlineData("[]")]
     [InlineData("[1, false, null, \"\"]", 1, false, null, "")]
-    public void ParseArray(string json, params object[] expectedValues)
+    public void ParseArray(string json, params object?[] expectedValues)
     {
         var result = Parser.Parse(json).As<object?[]>();
 
