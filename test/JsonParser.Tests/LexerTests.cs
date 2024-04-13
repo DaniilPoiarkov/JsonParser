@@ -2,13 +2,13 @@ using FluentAssertions;
 
 namespace JsonParser.Tests;
 
-public class LexerTests
+public sealed class LexerTests
 {
-    [Fact]
-    public void IsValid_WhenInputStringIsValid_ThenReturnsTrue()
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{ }")]
+    public void IsValid_WhenInputStringIsValid_ThenReturnsTrue(string json)
     {
-        var json = "{}";
-
         var lexer = new Lexer(json);
 
         var result = lexer.IsValid();
@@ -16,20 +16,33 @@ public class LexerTests
         result.Should().BeTrue();
     }
 
-    [Fact]
-    public void IsValid_WhenInputStringIsInvalid_ThenReturnsFalse()
+    [Theory]
+    [InlineData("{")]
+    [InlineData("}")]
+    public void IsValid_WhenInputStringIsInvalid_ThenReturnsFalse(string json)
     {
-        var jsonLPar = "{";
-        var jsonRPar = "}";
-
-        var lexer = new Lexer(jsonLPar);
+        var lexer = new Lexer(json);
         var result = lexer.IsValid();
 
         result.Should().BeFalse();
 
-        lexer = new Lexer(jsonRPar);
+        lexer = new Lexer(json);
 
         result = lexer.IsValid();
         result.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{ }")]
+    public void Analyse_WhenJsonValid_ThenProperTokensReturned(string json)
+    {
+        var expectedTokens = 2;
+
+        var lexer = new Lexer(json);
+
+        var tokens = lexer.Analyse();
+
+        tokens.Should().HaveCount(expectedTokens);
     }
 }
