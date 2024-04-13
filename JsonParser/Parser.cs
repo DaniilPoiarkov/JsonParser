@@ -1,4 +1,6 @@
-﻿namespace JsonParser;
+﻿using System.Text;
+
+namespace JsonParser;
 
 public sealed class Parser
 {
@@ -30,8 +32,48 @@ public sealed class Parser
                 result = false;
                 continue;
             }
+
+            if (ch == ' ')
+            {
+                continue;
+            }
+
+            if (char.IsDigit(ch))
+            {
+                var tuple = ParseNumber(json, i);
+
+                i += tuple.Count;
+                result = tuple.Result;
+
+                continue;
+            }
+
+            throw new ArgumentException($"Unknown character {ch} on position {i}.", nameof(json));
         }
 
         return result;
+    }
+
+    private static (int Count, int Result) ParseNumber(string json, int position)
+    {
+        var sb = new StringBuilder();
+
+        for (int i = position; i < json.Length; i++)
+        {
+            var ch = json[i];
+            
+            if (char.IsDigit(ch))
+            {
+                sb.Append(ch);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        var num = sb.ToString();
+        
+        return (num.Length, int.Parse(num));
     }
 }
