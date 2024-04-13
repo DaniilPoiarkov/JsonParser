@@ -4,11 +4,11 @@ namespace JsonParser.Tests;
 
 public class LexerTests
 {
-    [Fact]
-    public void IsValid_WhenInputStringIsValid_ThenReturnsTrue()
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{ }")]
+    public void IsValid_WhenInputStringIsValid_ThenReturnsTrue(string json)
     {
-        var json = "{}";
-
         var lexer = new Lexer(json);
 
         var result = lexer.IsValid();
@@ -16,18 +16,17 @@ public class LexerTests
         result.Should().BeTrue();
     }
 
-    [Fact]
-    public void IsValid_WhenInputStringIsInvalid_ThenReturnsFalse()
+    [Theory]
+    [InlineData("{")]
+    [InlineData("}")]
+    public void IsValid_WhenInputStringIsInvalid_ThenReturnsFalse(string json)
     {
-        var jsonLPar = "{";
-        var jsonRPar = "}";
-
-        var lexer = new Lexer(jsonLPar);
+        var lexer = new Lexer(json);
         var result = lexer.IsValid();
 
         result.Should().BeFalse();
 
-        lexer = new Lexer(jsonRPar);
+        lexer = new Lexer(json);
 
         result = lexer.IsValid();
         result.Should().BeFalse();
