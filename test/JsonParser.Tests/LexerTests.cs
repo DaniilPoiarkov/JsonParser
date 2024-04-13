@@ -2,7 +2,7 @@ using FluentAssertions;
 
 namespace JsonParser.Tests;
 
-public class LexerTests
+public sealed class LexerTests
 {
     [Theory]
     [InlineData("{}")]
@@ -30,5 +30,19 @@ public class LexerTests
 
         result = lexer.IsValid();
         result.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{ }")]
+    public void Analyse_WhenJsonValid_ThenProperTokensReturned(string json)
+    {
+        var expectedTokens = 2;
+
+        var lexer = new Lexer(json);
+
+        var tokens = lexer.Analyse();
+
+        tokens.Should().HaveCount(expectedTokens);
     }
 }

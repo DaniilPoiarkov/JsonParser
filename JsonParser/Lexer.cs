@@ -12,7 +12,9 @@ internal sealed class Lexer
 
     private static readonly Dictionary<char, char> _mapping = new()
     {
-        ['{'] = '}'
+        ['{'] = '}',
+        ['['] = ']',
+        ['"'] = '"'
     };
 
     public Lexer(string json)
@@ -49,14 +51,16 @@ internal sealed class Lexer
         return stack.Count == 0;
     }
 
-    public IEnumerable<Token> Analyse()
+    public IReadOnlyList<Token> Analyse()
     {
         while (MoveNext())
         {
 
         }
 
-        return _tokens.Where(t => t.Type.Name != TokenTypes.Space.Name);
+        return _tokens
+            .Where(t => t.Type.Name != TokenTypes.Space.Name)
+            .ToList();
     }
 
     private bool MoveNext()
