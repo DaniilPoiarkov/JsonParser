@@ -48,10 +48,51 @@ public sealed class Parser
                 continue;
             }
 
+            if (ch is '"')
+            {
+                var tuple = ParseString(json, i);
+
+                i += tuple.Count;
+                result = tuple.Result;
+                
+                continue;
+            }
+
             throw new ArgumentException($"Unknown character {ch} on position {i}.", nameof(json));
         }
 
         return result;
+    }
+
+    private static (int Count, string Result) ParseString(string json, int position)
+    {
+        var sb = new StringBuilder();
+
+        var i = position + 1;
+
+        for (; i < json.Length; i++)
+        {
+            var ch = json[i];
+
+            if (ch is '"')
+            {
+                i++;
+                break;
+            }
+
+            if (ch is '\\')
+            {
+                i++;
+                sb.Append(json[i]);
+                continue;
+            }
+
+            sb.Append(ch);
+        }
+
+        var word = sb.ToString();
+
+        return (i - position, word);
     }
 
     private static (int Count, int Result) ParseNumber(string json, int position)

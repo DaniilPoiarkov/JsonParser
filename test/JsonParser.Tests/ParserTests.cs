@@ -5,7 +5,7 @@ namespace JsonParser.Tests;
 public sealed class ParserTests
 {
     [Fact]
-    public void Parse_WhenValueIsNull_ThenNullReturned()
+    public void ParseNull()
     {
         var result = Parser.Parse("null");
 
@@ -15,7 +15,7 @@ public sealed class ParserTests
     [Theory]
     [InlineData("true", true)]
     [InlineData("false", false)]
-    public void Parse_WhenBooleanValueParsed_ThenItParsedProprly(string json, bool expected)
+    public void ParseBool(string json, bool expected)
     {
         var result = Parser.Parse(json);
         result.Should().Be(expected);
@@ -26,7 +26,19 @@ public sealed class ParserTests
     [InlineData("0 ", 0)]
     [InlineData("69", 69)]
     [InlineData("420", 420)]
-    public void Parse_WhenNumberValueParsed_ThenItParsedProprly(string json, int expected)
+    public void ParseNumber(string json, int expected)
+    {
+        var result = Parser.Parse(json);
+        result.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("\"one\"", "one")]
+    [InlineData("\"hello world\"", "hello world")]
+    [InlineData("\"69\"", "69")]
+    [InlineData("\"true\"", "true")]
+    [InlineData("\" \\\" wow!\\\" \"", " \" wow!\" ")]
+    public void ParseString(string json, string expected)
     {
         var result = Parser.Parse(json);
         result.Should().Be(expected);
