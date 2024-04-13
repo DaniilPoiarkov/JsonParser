@@ -43,4 +43,22 @@ public sealed class ParserTests
         var result = Parser.Parse(json);
         result.Should().Be(expected);
     }
+
+    [Theory]
+    [InlineData("[true, false]", true, false)]
+    public void ParseArray(string json, params object[] expectedValues)
+    {
+        var result = Parser.Parse(json).As<object?[]>();
+
+        result.Should().NotBeNullOrEmpty();
+
+        result.Length.Should().Be(expectedValues.Length);
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            var value = result[i];
+            var expected = expectedValues[i];
+            value.Should().BeEquivalentTo(expected);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using JsonParser.ValueParsers;
 
 namespace JsonParser;
 
@@ -6,67 +6,33 @@ public sealed class Parser
 {
     public static object? Parse(string json)
     {
-        object? result = null;
+        return InternalParse(json, 0).Value;
+    }
 
-        for (int i = 0; i < json.Length; i++)
+    private static (int Count, object? Value) InternalParse(string json, int position)
+    {
+        for (int i = position; i < json.Length; i++)
         {
             var ch = json[i];
-
-            if (ch == 'n')
-            {
-                i += 4;
-                result = null;
-                continue;
-            }
-
-            if (ch == 't')
-            {
-                i += 4;
-                result = true;
-                continue;
-            }
-
-            if (ch == 'f')
-            {
-                i += 5;
-                result = false;
-                continue;
-            }
 
             if (ch == ' ')
             {
                 continue;
             }
 
-            if (char.IsDigit(ch))
-            {
-                var tuple = ParseNumber(json, i);
+            var (inc, val) = ch is '['
+                ? ParseArray(json, i)
+                : ParseValue(json, i);
 
-                i += tuple.Count;
-                result = tuple.Result;
-
-                continue;
-            }
-
-            if (ch is '"')
-            {
-                var tuple = ParseString(json, i);
-
-                i += tuple.Count;
-                result = tuple.Result;
-                
-                continue;
-            }
-
-            throw new ArgumentException($"Unknown character {ch} on position {i}.", nameof(json));
+            return (inc + i, val);
         }
 
-        return result;
+        throw new ArgumentException("Invalid json format.", nameof(json));
     }
 
-    private static (int Count, string Result) ParseString(string json, int position)
+    private static (int Count, object?[] Value) ParseArray(string json, int position)
     {
-        var sb = new StringBuilder();
+        var result = new List<object?>();
 
         var i = position + 1;
 
@@ -74,47 +40,76 @@ public sealed class Parser
         {
             var ch = json[i];
 
-            if (ch is '"')
+            if (ch is ' ' or ',')
             {
-                i++;
-                break;
-            }
-
-            if (ch is '\\')
-            {
-                i++;
-                sb.Append(json[i]);
                 continue;
             }
 
-            sb.Append(ch);
-        }
-
-        var word = sb.ToString();
-
-        return (i - position, word);
-    }
-
-    private static (int Count, int Result) ParseNumber(string json, int position)
-    {
-        var sb = new StringBuilder();
-
-        for (int i = position; i < json.Length; i++)
-        {
-            var ch = json[i];
-            
-            if (char.IsDigit(ch))
-            {
-                sb.Append(ch);
-            }
-            else
+            if (ch is ']')
             {
                 break;
             }
+
+            var (inc, val) = InternalParse(json, i);
+
+            i += inc;
+            result.Add(val);
         }
 
-        var num = sb.ToString();
-        
-        return (num.Length, int.Parse(num));
+        return (i - position, result.ToArray());
+    }
+
+    private static (int Count, object? Value) ParseValue(string json, int position)
+    {
+        object? result = null;
+
+        var i = position;
+
+        for (; i < json.Length; i++)
+        {
+            var ch = json[i];
+
+            if (ch == ' ')
+            {
+                continue;
+            }
+
+            var parser = GetValueParser(ch)
+                ?? throw new ArgumentException($"Unknown character {ch} on position {i}.", nameof(json));
+
+            var res = parser.Parse(json, i);
+
+            i += res.Count;
+            result = res.Result;
+
+            break;
+        }
+
+        return (i - position, result);
+    }
+
+    private static IValueParser? GetValueParser(char ch)
+    {
+        if (ch == 'n')
+        {
+            return new NullParser();
+        }
+
+        if (ch is 't' or 'f')
+        {
+            return new BoolParser();
+        }
+
+        if (char.IsDigit(ch))
+        {
+            return new IntParser();
+        }
+
+        if (ch is '"')
+        {
+            return new StringParser();
+        }
+
+        throw new ArgumentException($"Unexpected char {ch}");
     }
 }
