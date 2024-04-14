@@ -65,4 +65,26 @@ public sealed class ParserTests
             value.Should().BeEquivalentTo(expected);
         }
     }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{ \"hello\" : \"world\" }", "hello", "world")]
+    [InlineData("{ \"name\" : \"David\", \"surname\": \"Bowie\" }", "name", "David", "surname", "Bowie")]
+    [InlineData("{ \"age\" : 69, \"time\": 420 }", "age", 69, "time", 420)]
+    public void ParseObject(string json, params object[] properties)
+    {
+        var result = Parser.Parse(json).As<Dictionary<string, object>>();
+
+        result.Should().NotBeNull();
+
+        var paired = properties.Chunk(2)
+            .ToArray();
+
+        for (int i = 0; i < paired.Length; i++)
+        {
+            var expected = paired[i];
+            var value = result[expected[0].ToString()!];
+            value.Should().BeEquivalentTo(expected[1]);
+        }
+    }
 }

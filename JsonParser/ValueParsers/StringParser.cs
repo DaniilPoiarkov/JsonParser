@@ -4,6 +4,11 @@ namespace JsonParser.ValueParsers;
 
 internal sealed class StringParser : IValueParser
 {
+    private static readonly Lazy<StringParser> _instance = new(() => new StringParser());
+    internal static StringParser Instance => _instance.Value;
+
+    private StringParser() { }
+
     public (int Count, object? Result) Parse(string json, int position)
     {
         var sb = new StringBuilder();

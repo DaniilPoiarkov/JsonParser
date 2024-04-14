@@ -36,9 +36,9 @@ public sealed class Parser
         throw new ArgumentException("Invalid json format.", nameof(json));
     }
 
-    private static (int Count, object?[] Value) ParseObject(string json, int position)
+    private static (int Count, Dictionary<string, object?> Value) ParseObject(string json, int position)
     {
-        var result = new List<object?>();
+        var result = new Dictionary<string, object?>();
 
         var i = position + 1;
 
@@ -46,23 +46,49 @@ public sealed class Parser
         {
             var ch = json[i];
 
-            if (ch is ' ' or ',')
+            if ( ch is ' ' or ',' or '\n')
             {
                 continue;
             }
 
-            if (ch is ']')
+            if (ch is '}')
             {
                 break;
             }
 
-            var (inc, val) = InternalParse(json, i);
+            if (ch is '"')
+            {
+                var (inc, key, value) = ParseObjectProperty(json, i);
 
-            i += inc;
-            result.Add(val);
+                i += inc;
+                result.Add(key, value);
+                continue;
+            }
         }
 
-        return (i - position, result.ToArray());
+        return (i - position, result);
+    }
+
+    private static (int Count, string Key, object? Value) ParseObjectProperty(string json, int position)
+    {
+        var i = position;
+
+        var (keyInc, key) = StringParser.Instance.Parse(json, i);
+
+        i += keyInc;
+
+        while (json[i] != ':')
+        {
+            i++;
+        }
+
+        i++;
+
+        var (valuesInc, value) = InternalParse(json, i);
+
+        i += valuesInc;
+
+        return (i - position, key?.ToString()!, value);
     }
 
     private static (int Count, object?[] Value) ParseArray(string json, int position)
@@ -137,7 +163,7 @@ public sealed class Parser
 
         if (ch is '"')
         {
-            return new StringParser();
+            return StringParser.Instance;
         }
 
         throw new ArgumentException($"Unexpected char {ch}");
