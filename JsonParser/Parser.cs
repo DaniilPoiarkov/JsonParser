@@ -49,7 +49,7 @@ public sealed class Parser
         {
             var ch = json[i];
 
-            if (ch is ' ' or ',' or '\n')
+            if (ch is ' ' or ',' or '\n' or '\r')
             {
                 continue;
             }
@@ -102,7 +102,7 @@ public sealed class Parser
         {
             var ch = json[i];
 
-            if (ch is ' ' or ',' or '\n')
+            if (ch is ' ' or ',' or '\n' or '\r')
             {
                 i++;
                 continue;
