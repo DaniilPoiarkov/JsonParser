@@ -205,4 +205,17 @@ public sealed class ParserTests
             expected.Should().BeEquivalentTo(actual);
         }
     }
+
+    [Theory]
+    [InlineData("}")]
+    [InlineData("{\"name\":}")]
+    [InlineData("")]
+    [InlineData("...")]
+    [InlineData("   ")]
+    public void ThrowsException_WhenJsonInvalid(string json)
+    {
+        var action = () => Parser.Parse(json);
+
+        action.Should().ThrowExactly<ArgumentException>();
+    }
 }
