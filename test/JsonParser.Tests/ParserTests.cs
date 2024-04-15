@@ -87,4 +87,24 @@ public sealed class ParserTests
             value.Should().BeEquivalentTo(expected[1]);
         }
     }
+
+    [Fact]
+    public void ParseObjectWithNestedArray()
+    {
+        var json = "{ \"ids\": [1, 2, 3],\n\"finishAt\": null }";
+
+        var result = Parser.Parse(json).As<Dictionary<string, object?>>();
+
+        result.Should().NotBeNull();
+
+        var idsArray = result["ids"].As<object[]>()
+            .Cast<decimal>();
+
+        idsArray.Should().NotBeNull();
+        idsArray.SequenceEqual([1, 2, 3]).Should().BeTrue();
+
+        result["finishAt"].Should().BeNull();
+
+        result.Count.Should().Be(2);
+    }
 }

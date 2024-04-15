@@ -22,15 +22,18 @@ public sealed class Parser
 
             if (ch is '[')
             {
-                return ParseArray(json, i);
+                var (inc, arr) = ParseArray(json, i);
+                return (i - position + inc,  arr);
             }
 
             if (ch is '{')
             {
-                return ParseObject(json, i);
+                var (inc, obj) = ParseObject(json, i);
+                return (i - position + inc, obj);
             }
 
-            return ParseValue(json, i);
+            var (vInc, val) = ParseValue(json, i);
+            return (i - position + vInc, val);
         }
 
         throw new ArgumentException("Invalid json format.", nameof(json));
@@ -46,13 +49,14 @@ public sealed class Parser
         {
             var ch = json[i];
 
-            if ( ch is ' ' or ',' or '\n')
+            if (ch is ' ' or ',' or '\n')
             {
                 continue;
             }
 
             if (ch is '}')
             {
+                i++;
                 break;
             }
 
@@ -60,9 +64,8 @@ public sealed class Parser
             {
                 var (inc, key, value) = ParseObjectProperty(json, i);
 
-                i += inc;
                 result.Add(key, value);
-                continue;
+                i += inc;
             }
         }
 
@@ -83,9 +86,7 @@ public sealed class Parser
         }
 
         i++;
-
         var (valuesInc, value) = InternalParse(json, i);
-
         i += valuesInc;
 
         return (i - position, key?.ToString()!, value);
@@ -97,24 +98,26 @@ public sealed class Parser
 
         var i = position + 1;
 
-        for (; i < json.Length; i++)
+        while (i < json.Length)
         {
             var ch = json[i];
 
-            if (ch is ' ' or ',')
+            if (ch is ' ' or ',' or '\n')
             {
+                i++;
                 continue;
             }
 
             if (ch is ']')
             {
+                i++;
                 break;
             }
 
             var (inc, val) = InternalParse(json, i);
 
-            i += inc;
             result.Add(val);
+            i += inc;
         }
 
         return (i - position, result.ToArray());
@@ -122,26 +125,20 @@ public sealed class Parser
 
     private static (int Count, object? Value) ParseValue(string json, int position)
     {
-        object? result = null;
-
         var i = position;
 
-        for (; i < json.Length; i++)
+        if (json[i] is ' ')
         {
-            var ch = json[i];
-
-            if (ch == ' ')
-            {
-                continue;
-            }
-
-            var parser = GetValueParser(ch)
-                ?? throw new ArgumentException($"Unknown character {ch} on position {i}.", nameof(json));
-
-            return parser.Parse(json, i);
+            i++;
+            throw new ArgumentException($"Unexpected character {json[i]} on position {i}.", nameof(json));
         }
 
-        return (i - position, result);
+        var parser = GetValueParser(json[i])
+            ?? throw new ArgumentException($"Unknown character \'{json[i]}\' on position {i}.", nameof(json));
+
+        var (inc, val) = parser.Parse(json, i);
+
+        return (i - position + inc, val);
     }
 
     private static IValueParser? GetValueParser(char ch)
@@ -158,7 +155,7 @@ public sealed class Parser
 
         if (char.IsDigit(ch))
         {
-            return new IntParser();
+            return new NumberParser();
         }
 
         if (ch is '"')
@@ -166,6 +163,6 @@ public sealed class Parser
             return StringParser.Instance;
         }
 
-        throw new ArgumentException($"Unexpected char {ch}");
+        return null;
     }
 }

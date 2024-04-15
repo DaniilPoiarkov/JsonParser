@@ -2,7 +2,7 @@
 
 namespace JsonParser.ValueParsers;
 
-internal sealed class IntParser : IValueParser
+internal sealed class NumberParser : IValueParser
 {
     public (int Count, object? Result) Parse(string json, int position)
     {
@@ -22,8 +22,8 @@ internal sealed class IntParser : IValueParser
             }
         }
 
-        var num = sb.ToString();
+        var result = sb.ToString();
 
-        return (num.Length, int.Parse(num));
+        return (result.Length, decimal.Parse(result));
     }
 }
