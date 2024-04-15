@@ -1,17 +1,17 @@
-﻿namespace JsonParser.ValueParsers;
+﻿namespace JsonParser.PrimitiveTypeParsers;
 
-internal sealed class BoolParser : IValueParser
+internal sealed class BoolParser : IPrimitiveTypeParser
 {
-    public (int Count, object? Result) Parse(string json, int position)
+    public (int Count, object? Value) Parse(string json, int position)
     {
         var ch = json[position];
 
-        if (ch == 't')
+        if (ch is 't')
         {
             return (4, true);
         }
 
-        if (ch == 'f')
+        if (ch is 'f')
         {
             return (5, false);
         }

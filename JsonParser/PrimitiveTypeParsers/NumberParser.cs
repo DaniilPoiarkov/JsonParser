@@ -1,10 +1,10 @@
 ﻿using System.Text;
 
-namespace JsonParser.ValueParsers;
+namespace JsonParser.PrimitiveTypeParsers;
 
-internal sealed class IntParser : IValueParser
+internal sealed class NumberParser : IPrimitiveTypeParser
 {
-    public (int Count, object? Result) Parse(string json, int position)
+    public (int Count, object? Value) Parse(string json, int position)
     {
         var sb = new StringBuilder();
 
@@ -22,8 +22,8 @@ internal sealed class IntParser : IValueParser
             }
         }
 
-        var num = sb.ToString();
+        var result = sb.ToString();
 
-        return (num.Length, int.Parse(num));
+        return (result.Length, decimal.Parse(result));
     }
 }
