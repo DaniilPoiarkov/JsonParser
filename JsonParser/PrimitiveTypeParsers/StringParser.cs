@@ -1,15 +1,15 @@
 ﻿using System.Text;
 
-namespace JsonParser.ValueParsers;
+namespace JsonParser.PrimitiveTypeParsers;
 
-internal sealed class StringParser : IValueParser
+internal sealed class StringParser : IPrimitiveTypeParser
 {
     private static readonly Lazy<StringParser> _instance = new(() => new StringParser());
     internal static StringParser Instance => _instance.Value;
 
     private StringParser() { }
 
-    public (int Count, object? Result) Parse(string json, int position)
+    public (int Count, object? Value) Parse(string json, int position)
     {
         var sb = new StringBuilder();
 
